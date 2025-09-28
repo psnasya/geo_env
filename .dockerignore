@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+.git
+README.md
+.env
+*.log
+.DS_Store
+geo_env/          # Исключаем виртуальное окружение
+output/
+training_*.png
