@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<!-- saved from url=(0335)https://storage.yandexcloud.net/filesmy/backend/frontend.html?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEDTIYkwkgDUoD3S6uS9z2%2F20251002%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20251002T192049Z&X-Amz-Expires=3600&X-Amz-Signature=68198d3e5b746a2f9df647665585f95ee1dbb48c1f0ef91d1601a4cb08c83490&X-Amz-SignedHeaders=host -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фото и координаты</title>
+    <link rel="stylesheet" href="./Фото и координаты_files/leaflet.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: url('https://avatars.mds.yandex.net/i?id=4a61dd7181d4c483049cacf78b83338d_l-4401365-images-thumbs&n=13') center/cover no-repeat;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            padding-bottom: 80px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #8B00FF, #2575fc);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 30px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8B00FF;
+            text-align: center;
+        }
+        
+        .upload-area {
+            border: 3px dashed #8B00FF;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        
+        .upload-area:hover {
+            background-color: #f8f9fa;
+            border-color: white;
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            color: #8B00FF;
+            margin-bottom: 15px;
+        }
+        
+        .result-area {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f5f5ff;
+            border-radius: 8px;
+        }
+        
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .coordinates-result {
+            font-family: monospace;
+            font-size: 18px;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .map-container {
+            height: 400px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-weight: bold;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 8px;
+            margin: 15px auto;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(90deg, #8B00FF, #2575fc);
+            color: white;
+        }
+        
+        .support-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #8B00FF, #2575fc);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid white;
+        }
+        
+        .support-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #7A00E0, #1C6FE0);
+            border-color: white;
+        }
+        
+        .support-button:active {
+            transform: translateY(0);
+        }
+        
+        .support-icon {
+            font-size: 20px;
+        }
+        
+        .support-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 3px solid #8B00FF;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #8B00FF;
+            padding-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+            padding: 5px;
+            border: 1px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-button:hover {
+            color: #8B00FF;
+            border-color: #8B00FF;
+        }
+        
+        .support-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .support-option {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid white;
+        }
+        
+        .support-option:hover {
+            background: #e8f4fc;
+            border-color: white;
+            transform: translateX(5px);
+        }
+        
+        .option-icon {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .phone-icon {
+            color: #2575fc;
+        }
+        
+        .option-text {
+            flex: 1;
+        }
+        
+        .option-title {
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 1px dotted white;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .option-description {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .support-button {
+                bottom: 10px;
+                right: 10px;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .map-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Фото и координаты</h1>
+            <p class="description">Загрузите фото для получения координат</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="section">
+                <h2>Загрузка фото</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <p>Перетащите сюда фото или кликните для выбора</p>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;" wfd-id="id0">
+                </div>
+                
+                <img id="imagePreview" class="image-preview" alt="Предпросмотр изображения">
+                
+                <div class="result-area">
+                    <div class="result-title">Координаты изображения:</div>
+                    <div class="coordinates-result" id="coordinatesResult">Загрузите изображение для определения координат</div>
+                    <div class="map-container" id="mapContainer">
+                        Карта появится здесь после загрузки фото
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 Сервер "Всем общий треш"</p>
+        </footer>
+    </div>
+
+    <button class="support-button" id="supportButton">
+        <span class="support-icon">💬</span>
+        Поддержка
+    </button>
+
+    <div class="support-modal" id="supportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Служба поддержки</h3>
+                <button class="close-button" id="closeModal">×</button>
+            </div>
+            <p>Мы всегда готовы помочь! Способы связи:</p>
+            <div class="support-options">
+                <div class="support-option" onclick="alert(&#39;Телефон поддержки: +91 94 330 500 35 (teg: @p_s_nasya_14)&#39;)">
+                    <div class="option-icon phone-icon">📱</div>
+                    <div class="option-text">
+                        <div class="option-title">Телефон</div>
+                        <div class="option-description">Позвоните нам для быстрой помощи</div>
+                    </div>
+                </div>
+                <div class="support-option" onclick="alert(&#39;Email: support@obshiy-tresh.ru&#39;)">
+                    <div class="option-icon">✉️</div>
+                    <div class="option-text">
+                        <div class="option-title">Email</div>
+                        <div class="option-description">Напишите нам на почту</div>
+                    </div>
+                </div>
+                <div class="support-option" onclick="alert(&#39;Чат будет доступен в ближайшее время&#39;)">
+                    <div class="option-icon">💬</div>
+                    <div class="option-text">
+                        <div class="option-title">Онлайн-чат</div>
+                        <div class="option-description">Чат с оператором в реальном времени</div>
+                    </div>
+                </div>
+                <div class="support-option" onclick="alert(&#39;FAQ откроется в новом окне&#39;)">
+                    <div class="option-icon">❔</div>
+                    <div class="option-text">
+                        <div class="option-title">FAQ</div>
+                        <div class="option-description">Ответы на часто задаваемые вопросы</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./Фото и координаты_files/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const coordinatesResult = document.getElementById('coordinatesResult');
+            const mapContainer = document.getElementById('mapContainer');
+            
+            const supportButton = document.getElementById('supportButton');
+            const supportModal = document.getElementById('supportModal');
+            const closeModal = document.getElementById('closeModal');
+            
+            let currentMap = null;
+            
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#8B00FF';
+                uploadArea.style.backgroundColor = '#f8f9fa';
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.style.borderColor = '#8B00FF';
+                uploadArea.style.backgroundColor = 'transparent';
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#8B00FF';
+                uploadArea.style.backgroundColor = 'transparent';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleImageUpload();
+                }
+            });
+            
+            fileInput.addEventListener('change', handleImageUpload);
+            
+            async function handleImageUpload() {
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = async function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        
+                        coordinatesResult.innerHTML = 'Анализируем изображение...';
+                        mapContainer.innerHTML = 'Загрузка...';
+                        
+                        try {
+                            const formData = new FormData();
+                            formData.append('file', fileInput.files[0]);
+                            
+                            const response = await fetch('/predict', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                const coords = result.prediction.coordinates;
+                                const location = result.prediction.location_info;
+                                
+                                coordinatesResult.innerHTML = 
+                                    `Широта: ${coords.latitude}, Долгота: ${coords.longitude}<br>
+                                     <small>Город: ${location.city}, Уверенность: ${(location.confidence * 100).toFixed(1)}%</small>`;
+                                
+                                displayMap(coords, location);
+                                
+                            } else {
+                                coordinatesResult.innerHTML = 'Ошибка анализа изображения';
+                                mapContainer.innerHTML = 'Попробуйте другое изображение';
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            coordinatesResult.innerHTML = 'Ошибка соединения с сервером';
+                            mapContainer.innerHTML = 'Проверьте подключение и попробуйте снова';
+                        }
+                    }
+                    
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+            }
+            
+            function displayMap(coords, location) {
+                // Clear previous map
+                if (currentMap) {
+                    currentMap.remove();
+                }
+                
+                mapContainer.innerHTML = '<div id="map" style="height: 100%; width: 100%; border-radius: 8px;"></div>';
+                
+                // Initialize map
+                const map = L.map('map').setView([coords.latitude, coords.longitude], 13);
+                currentMap = map;
+                
+                // Add tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                // Add marker
+                L.marker([coords.latitude, coords.longitude])
+                    .addTo(map)
+                    .bindPopup(`${location.city}<br>Широта: ${coords.latitude}<br>Долгота: ${coords.longitude}`)
+                    .openPopup();
+            }
+            
+            supportButton.addEventListener('click', function() {
+                supportModal.style.display = 'flex';
+            });
+            
+            closeModal.addEventListener('click', function() {
+                supportModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(e) {
+                if (e.target === supportModal) {
+                    supportModal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+<div id="volume-booster-visusalizer">
+                    <div class="sound">
+                        <div class="sound-icon"></div>
+                        <div class="sound-wave sound-wave_one"></div>
+                        <div class="sound-wave sound-wave_two"></div>
+                        <div class="sound-wave sound-wave_three"></div>
+                    </div>
+                    <div class="segments-box">
+                        <div data-range="1-20" class="segment"><span></span></div>
+                        <div data-range="21-40" class="segment"><span></span></div>
+                        <div data-range="41-60" class="segment"><span></span></div>
+                        <div data-range="61-80" class="segment"><span></span></div>
+                        <div data-range="81-100" class="segment"><span></span></div>
+                    </div>
+                </div><div id="torrent-scanner-popup" style="display: none;"><template shadowrootmode="open"><link rel="stylesheet" href="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/css/custom.css"><div id="yf-bt-wrapper" class="free"><div class="header"><img class="sts-logo" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/ts-free-logo.png"><div class="search-content"><input id="search-input" class="search-input" type="search" placeholder="Start your search here..."><span id="search-btn" class="search-btn"></span></div></div><div class="container"><div class="main-container"><div id="torrent-data" class="torrent-content"><div class="t-table"><div class="t-header"><div class="t-name">Torrent search results</div></div><div id="checked-sites" class="checked-sites-section"><div class="left">Checked Sites</div><div class="right"><span id="sites-count" class="sites-count">0</span></div></div><div id="table-body" class="t-body"><div id="loading" class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div><div class="table-message-container" id="table-message"><p>No items to list <br> Use the search bar above for instant results</p></div></div></div></div><div class="tooltip"><p class="tooltip-text">To see search results, type here and hit `Enter`</p></div><div class="footer"><span><span id="numberScanned" class="numberScanned">No results</span></span></div><div class="upgradeProPanel"><div class="upgradeProPanelTitle">Try our Torrent Scanner Plus to unlock:</div><div class="upgradeProPanelList"><div><p>Faster Results</p></div><div><p>Unlimited Search Results with detailed torrent info</p></div><div><p>Secure Torrenting</p></div></div><a class="upgrade-to-pro-button-2" id="buy-pro" href="https://shop.lavasoft.com/clickgate/join.aspx?ref=shop.lavasoft.com&amp;ujid=W9yhyAwEW5Q%3D" target="_blank">Get Torrent Scanner +</a></div></div><div class="sync-container nav-se-container"><div class="nav-se-content"><img class="sync-icon nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-sync.svg"><div class="nav-se-title">One more step to go before you start torrenting!</div><p class="nav-se-text">This extension can sync results with BitTorrent and/or uTorrent for instant downloading.</p><p class="nav-se-text">To activate this feature, please click on the button below, and then on the Chrome message to activate the 'Messaging Permission'.</p><button class="sync-permission-btn nav-se-btn">Activate Messaging Permission</button></div><div class="nav-se-content display-none"><img class="sync-icon nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-sync.svg"><div class="nav-se-title">Syncing...</div><p class="nav-se-text">Please allow Messaging Permissions in the proceeding Chrome message.</p></div><div class="nav-se-content display-none"><img class="sync-icon nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-success.svg"><div class="nav-se-title">Sync Complete</div><p class="nav-se-text">You have successfully activated the “Messaging Permission” feature. All your search results will sync with BitTorrent and/or uTorrent.</p></div></div><div class="license-container nav-se-container"><div class="nav-se-content"><img class="nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-key2.svg"><div class="nav-se-title">Enter License Key</div><p class="nav-se-text">Enter your license key and click on the activate button to start using <span>Torrent Scanner Plus.</span></p><input type="text" id="license-input-key" class="license-input-key" placeholder="Enter Key"><div class="license-spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div><button id="license-activate-button" class="license-activate-button nav-se-btn">Activate</button><p>Don't have a license key? <a class="license-buy-link" target="_blank">Click here</a></p></div><div class="nav-se-content display-none"><img class="nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-success.svg"><div class="nav-se-title">Happy Torrenting!</div><p class="nav-se-text">You are now an active PRO user</p><p class="nav-se-text">Your key is valid until <span class="expiry-date"></span></p></div><div class="nav-se-content display-none"><img class="nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-alert.svg"><div class="nav-se-title">Your license key has expired</div><p class="nav-se-text">Looks like your license key has expired, to renew your PRO license key, please select a license type:</p><a class="upgrade-to-pro-button-2 buy-license-expiry-button" href="https://shop.lavasoft.com/clickgate/join.aspx?ref=shop.lavasoft.com&amp;ujid=W9yhyAwEW5Q%3D" target="_blank">Buy Torrent Scanner +</a><p class="nav-se-text">Already have a license key? <a class="link" id="show-license-panel">Click here</a></p></div><div class="nav-se-content display-none"><img class="nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-success.svg"><p class="nav-se-text">Your key is valid until <span class="expiry-date"></span></p><p class="nav-se-text">Your License Key:</p><p class="nav-se-text"></p><p class="nav-se-text margin-top-50">Switch back to Torrent Scanner Free?</p><button class="activate-free-btn nav-se-btn">Revert to Free Version</button></div></div><div class="feedback-container nav-se-container"><div class="nav-se-content"><img class="nav-se-icon" src="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/img/assets/icon-feedback.svg"><div class="nav-se-title">Feedback</div><p class="nav-se-text">Help us improve Torrent Scanner, send us comments, bugs, feedback, and suggestions.</p><button id="feedback-button" class="feedback-button nav-se-btn">Send Feedback</button></div></div><div class="settings-container nav-se-container"><div class="nav-se-content"><div class="settings-title">Settings</div></div><div class="s-table"><div class="s-row"><div class="s-title">FAQ<div class="s-arrow"><span class="arrow-down"></span></div></div><div class="s-content faq-content"><p class="faq-text">FAQ: <a href="chrome-extension://mannmpkecpmikhdgonjahfmekmplodnm/faq.html" target="_blank">Click here</a></p></div></div><div class="s-row"><div class="s-title">Rate the extension<div class="s-arrow"><span class="arrow-down"></span></div></div><div class="s-content"><p class="rate-text">How did you like the extension experience?</p><div class="rating"><span class="rating-star">★</span><span class="rating-star">★</span><span class="rating-star">★</span><span class="rating-star">★</span><span class="rating-star">★</span></div><button class="rating-btn nav-se-btn" disabled="">Submit</button></div></div><div class="s-row"><div class="s-title">About<div class="s-arrow"><span class="arrow-down"></span></div></div><div class="s-content about-content"><div class="about-version">Version 1.4.0 <br><br> What's New</div><div class="about-new"><p></p><ul><li>Experience a complete new User Interface of the extension. It is enhanced and user friendly now.</li><li>Squashed some bugs.</li></ul><p></p></div></div></div><div class="s-row"><div class="s-title">Privacy Policy<div class="s-arrow"><span class="arrow-down"></span></div></div><div class="s-content"><div class="policy-text">Adaware Software (7270356 Canada Inc.) is the operator of the Adaware products suites and related services (the “<b>Company</b>”, ”<b>we</b>” or “<b>us</b>”). We respect your privacy rights and we are committed to protecting them. This privacy policy (“<b>Privacy Policy</b>” or simply “<b>policy</b>”) governs our products, services and websites that link to this Privacy Policy, and describes our practices of processing data from you. By “<b>you</b>”, we refer to either or all of the following: (i) visitors to our websites that links to this Privacy Policy (“<b>Visitor</b>” and “<b>Website</b>”, respectively); (ii) our customers using our software products and Services (“<b>User</b>”); and (c) a business customer, a business partner that has a contractual relationship with us or a prospective customer that is yet to be engaged in a contract with us (“Business Customer”). Unless explicitly mentioned otherwise, the information in this Privacy Policy refers to any and all data subject types (“you” or “your’). <br><br> For the purpose of this policy, the “<b>Service(s)</b>” shall include any software licensed by the Company, including features offered by or within the installed software or additional software scripts available therein (either downloaded from one of our websites, pre-installed on your device, downloaded through a third party website, obtained on a physical medium, or otherwise), or services provided through and/or on top such software, services offered on our websites, communication forums, support services, account operation, updates, enhancements, new features, premium support, extended guarantees, online version and free versions of a software or additional services or features as we ay make available from time to time. <br><br> If you are a California resident, please also see our <a href="https://www.adaware.com/CCPA/" target="_blank">CCPA Notice</a>. <br><br> <a href="https://www.adaware.com/privacy-policy/" target="_blank">Read more</a></div></div></div><div class="s-row" style="display: none;"><div class="s-title">Contact Us<div class="s-arrow"><span class="arrow-down"></span></div></div><div class="s-content"><div class="contact-text">For any payment and order-related support, please contact us at Email: <a href="mailto:support@torrentscanner.zendesk.com">support@torrentscanner.zendesk.com</a> or <a href="mailto:pcsoftwareinfo.com">pcsoftwareinfo.com</a><br><br>Phone: <a href="https://pcsoftwareinfo.com/contact.aspx" target="_blank">Click here</a></div></div></div></div></div></div><div class="nav"><button id="btnSync" class="nav-btn">Sync</button><button id="btnLicense" class="nav-btn">License</button><button id="btnHome" class="nav-btn">Home</button><button id="btnFeedback" class="nav-btn">Feedback</button><button id="btnSettings" class="nav-btn">Settings</button></div></div></template></div></body></html>
